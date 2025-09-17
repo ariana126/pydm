@@ -15,6 +15,12 @@ class DummyInterface:
 class DummyImplementation(DummyInterface):
     pass
 
+class DummyClass:
+    def __init__(self, stub_val: str):
+        self.stub_val = stub_val
+class DummyClassFactoryStub:
+    def make(self):
+        return DummyClass('CFF')
 
 def test_only_one_instance_of_service_container_exists() -> None:
     # arrange
@@ -50,3 +56,15 @@ def test_service_container_use_bounded_implementation_for_an_interface() -> None
 
     # assert
     assert_that(impl).is_instance_of(DummyImplementation)
+
+def test_service_container_use_bounded_factory_to_make_the_service() -> None:
+    # arrange
+    sut: ServiceContainer = ServiceContainer.get_instance()
+    sut.bind_to_factory(DummyClass, DummyClassFactoryStub, 'make')
+
+    # act
+    maked_service = sut.get_service(DummyClass)
+
+    # assert
+    assert_that(maked_service).is_instance_of(DummyClass)
+    assert_that(maked_service.stub_val).is_equal_to('CFF')

@@ -3,6 +3,7 @@ from typing import TypeVar, Type, Dict
 from underpy import Encapsulated
 
 T = TypeVar("T")
+F = TypeVar("F")
 
 class ServiceContainer(Encapsulated):
     __instance = None
@@ -16,6 +17,7 @@ class ServiceContainer(Encapsulated):
         if not hasattr(self, "__services"):
             self.__services: dict[Type[T], T] = {}
             self.__binds: dict[Type[T], Type[T]] = {}
+            self.__factories: dict[Type[T], tuple[Type[T], str]] = {}
 
     @classmethod
     def get_instance(cls) -> 'ServiceContainer':
@@ -29,6 +31,11 @@ class ServiceContainer(Encapsulated):
 
         if cls in self.__binds:
             return self.get_service(self.__binds[cls])
+
+        if cls in self.__factories:
+            factory = self.get_service(self.__factories[cls][0])
+            # TODO: Support factory method args
+            return getattr(factory, self.__factories[cls][1])()
 
         dependencies: dict[str, T] = {}
         arguments = signature(cls.__init__).parameters
@@ -49,3 +56,6 @@ class ServiceContainer(Encapsulated):
 
     def bind(self, interface: Type[T], implementation: Type[T]) -> None:
         self.__binds[interface] = implementation
+
+    def bind_to_factory(self, cls: Type[T], factory_cls: Type[F], factory_method: str) -> None:
+        self.__factories[cls] = (factory_cls, factory_method)
