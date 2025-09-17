@@ -1,6 +1,7 @@
 from inspect import signature
 from typing import TypeVar, Type, Dict
 from underpy import Encapsulated
+from pydm.parameters_bag import ParametersBagInterface
 
 T = TypeVar("T")
 F = TypeVar("F")
@@ -18,6 +19,8 @@ class ServiceContainer(Encapsulated):
             self.__services: dict[Type[T], T] = {}
             self.__binds: dict[Type[T], Type[T]] = {}
             self.__factories: dict[Type[T], tuple[Type[T], str]] = {}
+            self.__mapped_params: dict[Type[T], dict[str, str]] = {}
+            self.__parameters: ParametersBagInterface|None = None
 
     @classmethod
     def get_instance(cls) -> 'ServiceContainer':
@@ -40,6 +43,10 @@ class ServiceContainer(Encapsulated):
         dependencies: dict[str, T] = {}
         arguments = signature(cls.__init__).parameters
         for arg_name, arg in arguments.items():
+            if cls in self.__mapped_params and arg_name in self.__mapped_params[cls] and not self.__parameters is None:
+                dependencies[arg_name] = self.__parameters.get(self.__mapped_params[cls][arg_name])
+                continue
+
             if 'self' == arg_name or arg.VAR_POSITIONAL == arg.kind or arg.VAR_KEYWORD == arg.kind:
                 continue
 
@@ -59,3 +66,9 @@ class ServiceContainer(Encapsulated):
 
     def bind_to_factory(self, cls: Type[T], factory_cls: Type[F], factory_method: str) -> None:
         self.__factories[cls] = (factory_cls, factory_method)
+
+    def bind_parameters(self, cls: Type[T], parameters: dict[str, str]) -> None:
+        self.__mapped_params[cls] = parameters
+
+    def set_parameters(self, parameters: ParametersBagInterface) -> None:
+        self.__parameters = parameters

@@ -1,5 +1,7 @@
 from assertpy.assertpy import assert_that
-from pydm import ServiceContainer
+from pydm import ServiceContainer, InMemoryParametersBag
+from pydm.parameters_bag import ParametersBagInterface
+
 
 class DummyUnitOfWork:
     pass
@@ -21,6 +23,10 @@ class DummyClass:
 class DummyClassFactoryStub:
     def make(self):
         return DummyClass('CFF')
+
+class ClassSub:
+    def __init__(self, value: str):
+        self.value = value
 
 def test_only_one_instance_of_service_container_exists() -> None:
     # arrange
@@ -68,3 +74,18 @@ def test_service_container_use_bounded_factory_to_make_the_service() -> None:
     # assert
     assert_that(maked_service).is_instance_of(DummyClass)
     assert_that(maked_service.stub_val).is_equal_to('CFF')
+
+def test_service_container_use_parameters_when_service_a_dependency_is_value() -> None:
+    # arrange
+    sut: ServiceContainer = ServiceContainer.get_instance()
+    parameters: ParametersBagInterface = InMemoryParametersBag({
+        'DUMMY_VALUE': 'vfp'
+    })
+    sut.set_parameters(parameters)
+    sut.bind_parameters(ClassSub, {'value': 'DUMMY_VALUE'})
+
+    # act
+    cls = sut.get_service(ClassSub)
+
+    # assert
+    assert_that(cls.value).is_equal_to('vfp')
