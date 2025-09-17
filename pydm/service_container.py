@@ -15,6 +15,7 @@ class ServiceContainer(Encapsulated):
     def __init__(self):
         if not hasattr(self, "__services"):
             self.__services: dict[Type[T], T] = {}
+            self.__binds: dict[Type[T], Type[T]] = {}
 
     @classmethod
     def get_instance(cls) -> 'ServiceContainer':
@@ -25,6 +26,9 @@ class ServiceContainer(Encapsulated):
     def get_service(self, cls: Type[T]) -> T:
         if cls in self.__services:
             return self.__services[cls]
+
+        if cls in self.__binds:
+            return self.get_service(self.__binds[cls])
 
         dependencies: dict[str, T] = {}
         arguments = signature(cls.__init__).parameters
@@ -42,3 +46,6 @@ class ServiceContainer(Encapsulated):
         self.__services[cls] = instance
 
         return instance
+
+    def bind(self, interface: Type[T], implementation: Type[T]) -> None:
+        self.__binds[interface] = implementation

@@ -10,6 +10,11 @@ class UseCaseStub:
     def __init__(self, repository: RepositoryStub):
         self.repository = repository
 
+class DummyInterface:
+    pass
+class DummyImplementation(DummyInterface):
+    pass
+
 
 def test_only_one_instance_of_service_container_exists() -> None:
     # arrange
@@ -28,9 +33,20 @@ def test_service_container_resolves_service_dependencies_automatically() -> None
     sut: ServiceContainer = ServiceContainer.get_instance()
 
     # act
-    desired_service: UseCaseStub = sut.get_service(UseCaseStub)
+    desired_service = sut.get_service(UseCaseStub)
 
     # assert
     assert_that(desired_service).is_instance_of(UseCaseStub)
     assert_that(desired_service.repository).is_instance_of(RepositoryStub)
     assert_that(desired_service.repository.unit_of_work).is_instance_of(DummyUnitOfWork)
+
+def test_service_container_use_bounded_implementation_for_an_interface() -> None:
+    # arrange
+    sut: ServiceContainer = ServiceContainer.get_instance()
+    sut.bind(DummyInterface, DummyImplementation)
+
+    # act
+    impl = sut.get_service(DummyInterface)
+
+    # assert
+    assert_that(impl).is_instance_of(DummyImplementation)
