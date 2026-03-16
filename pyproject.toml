@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "pydmpro"
-version = "0.1.1"
+version = "0.1.2"
 description = "Python Dependency Manager"
 authors = [
   { name = "Ariana Maghsoudi", email = "ariana.maghsoudi82@gmail.com" }
