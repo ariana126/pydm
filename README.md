@@ -78,5 +78,11 @@ If you have an improvement or find a bug:
 
 ---
 
+## 🤖 AI Agent Skill
+
+An agent skill for `pydm` is available at [`docs/agents/skills/pydm/`](docs/agents/skills/pydm/). Download it and add it to your agent's skills directory so it understands how to work with this package — including registering services, binding interfaces, wiring dependencies, and injecting parameters.
+
+---
+
 ## 💡 About
 `pydm` is a lightweight dependency management package designed to simplify service container management and parameter handling in Python projects. Originally created by [Ariana](https://github.com/ariana126), it provides tools to maintain clean, scalable architecture and streamline the injection of dependencies and configuration parameters.
